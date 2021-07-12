@@ -18,28 +18,23 @@
 	</properties>
 
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.0.0</version>
-			</plugin>
-			<plugin>
-				<groupId>org.mule.tools.maven</groupId>
-				<artifactId>mule-maven-plugin</artifactId>
-				<version>${mule.maven.plugin.version}</version>
-				<extensions>true</extensions>
-				<configuration>
-			        <cloudHubDeployment>
-			            <uri>https://anypoint.mulesoft.com</uri>
-			            <muleVersion>4.3.0</muleVersion>
-			            <username>jcordobal</username>
-			            <password>Joakoss1995!</password>
-			            <applicationName>mulesoft-develop</applicationName>
-			            <environment>Sandbox</environment>
-			            <workerType>MICRO</workerType>
-			            <objectStoreV2>true</objectStoreV2>
-			        </cloudHubDeployment>
+        <plugins>
+            <plugin>
+                <groupId>org.mule.tools.maven</groupId>
+                <artifactId>mule-maven-plugin</artifactId>
+                <version>3.3.5</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <cloudHubDeployment>
+                        <uri>https://anypoint.mulesoft.com</uri>
+                        <muleVersion>4.2.2</muleVersion>
+                        <username>jcordobal</username>
+                        <password>Joakoss1995!</password>
+                        <applicationName>mulesoft-cicd-sample1</applicationName>
+                        <environment>Sandbox</environment>
+                        <workerType>MICRO</workerType>
+                        <objectStoreV2>true</objectStoreV2>
+                    </cloudHubDeployment>
 					<sharedLibraries>
 						<sharedLibrary>
 							<groupId>mysql</groupId>
