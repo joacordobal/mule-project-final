@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="7df08bf5-6123-49a4-9813-e5c5bc740fc9" >
+		<db:my-sql-connection host="database-mule1.cqnnno7itnen.us-east-1.rds.amazonaws.com" port="3306" user="root" password="Joakoss1995!" />
+	</db:config>
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="20bfee7b-1a95-483f-90e6-8ba38867d8a5" >
+		<wsc:connection wsdlLocation="http://tshirts.demos.mulesoft.com/?wsdl" service="TshirtServicePortTypeService" port="TshirtServicePortTypePort" address="http://tshirts.demos.mulesoft.com/" />
+	</wsc:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="84619caf-7690-408e-b37b-5d8985a7537b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="Copy_of_Copy_of_GetInventory-Soap" doc:id="9fef1808-791d-4a17-bd93-e5ccf5b01950" >
+		<http:listener doc:name="Copy_of_Copy_of_Listener" doc:id="7a0e1b2c-ce14-4727-ab30-893a44b94096" config-ref="HTTP_Listener_config" path="/soapInventory" />
+		<wsc:consume operation="ListInventory" doc:id="36578619-7735-4a97-bc69-563b65a39ade" config-ref="Web_Service_Consumer_Config" doc:name="Copy_of_Copy_of_Consume" />
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="0f76811e-b960-4b62-8d67-cb2b32d7e7b8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://mulesoft.org/tshirt-service
+---
+{
+	nombranimal: payload.body.ns0#ListInventoryResponse.inventory.productCode
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="153401ad-d117-4e32-ab97-e05b4509b3ca" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Copy_of_Copy_of_Get-InventoryDB" doc:id="c6995846-08bd-4a1d-a95f-452212d8ffbe" >
+		<http:listener doc:name="Copy_of_Copy_of_Copy_of_Listener" doc:id="301c417a-2fca-43f8-b3da-131c69c9ecde" config-ref="HTTP_Listener_config" path="/inventory" />
+		<db:select doc:name="Copy_of_Copy_of_Select" doc:id="f436588e-d0fc-4f5e-97b6-f17b78b9442d" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from retaillegacy.inventory]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="e12732cb-739e-428f-92cc-93416ed9ccbb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"inventory": payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Copy_of_Copy_of_Get-InventoryDB-size" doc:id="ad0b82fc-1958-4639-ab58-ce1c80c8596f" >
+		<http:listener doc:name="Copy_of_Copy_of_Copy_of_Copy_of_Listener" doc:id="d02b97c8-7678-425d-835d-e1173dba6989" config-ref="HTTP_Listener_config" path="/inventory/size" />
+		<db:select doc:name="Copy_of_Copy_of_Select" doc:id="9152d940-926c-49b3-81b8-b445a06c3e08" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from retaillegacy.inventory where sizes = :size]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	size: attributes.queryParams.size
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="d8b34cd2-3816-4707-96e6-ceb4daf0533e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Copy_of_Copy_of_Get-InventoryDB-sku" doc:id="198469bd-08a5-4f77-9f03-e789668fb4d4" >
+		<http:listener doc:name="Copy_of_Listener" doc:id="3d4b03bc-6ab0-443e-bbb9-634c2302594f" config-ref="HTTP_Listener_config" path="/inventory/sku" />
+		<db:select doc:name="Copy_of_Copy_of_Copy_of_Select" doc:id="6174befe-da9e-43ab-91d5-cfdaa76de79d" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from retaillegacy.inventory where sku = :sku]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	sku: attributes.queryParams.sku
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Copy_of_Copy_of_Copy_of_Transform Message" doc:id="b2487a17-39b6-4991-bd91-0bddb7be7ff8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Copy_of_Copy_of_Get-Stock" doc:id="2c0161b6-4c7c-4ac6-ace0-412ec0ba8058" >
+		<http:listener doc:name="Copy_of_Copy_of_Copy_of_Copy_of_Copy_of_Copy_of_Listener" doc:id="b0dcebc8-e716-47bb-8175-5b226ad4b855" config-ref="HTTP_Listener_config" path="/stock" />
+		<choice doc:name="Copy_of_Copy_of_Choice" doc:id="2d98dbaf-8fa6-4533-84dd-031840b1ee69" >
+			<when expression='#[attributes.queryParams.stock == "con stock"]' >
+				<db:select doc:name="Copy_of_Copy_of_Select" doc:id="5fe74133-274c-4379-a37f-024550dac6c2" config-ref="Database_Config" >
+					<db:sql ><![CDATA[select * from retaillegacy.inventory where stock != 0]]></db:sql>
+				</db:select>
+				<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="e46fac34-fc3c-41bc-9711-8d533aaeaf2a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='#[attributes.queryParams.stock == "sin stock"]' >
+				<db:select doc:name="Copy_of_Copy_of_select2" doc:id="0d97ae8a-b619-4fe2-8be7-3f544fcbb703" config-ref="Database_Config" >
+					<db:sql ><![CDATA[select * from retaillegacy.inventory where stock = 0]]></db:sql>
+				</db:select>
+				<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="ef9bda4d-00f3-480c-8544-a1bf0bceb31c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value="Valor no encontrado" doc:name="Copy_of_Copy_of_Set Payload" doc:id="2b6278dd-532e-4255-98fe-14c41a56f224" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="Copy_of_Copy_of_Bulkinventory" doc:id="3d2d8162-d764-4f94-bac7-24d0518c53a2" >
+		<http:listener doc:name="Copy_of_Copy_of_Listener" doc:id="40d5a089-5eac-416c-a788-97d60710cf1b" config-ref="HTTP_Listener_config" path="/initialbulk" allowedMethods="POST" />
+		<wsc:consume operation="ListInventory" doc:name="Copy_of_Copy_of_Copy_of_Consume" doc:id="0b776fee-cd38-40d8-b9bf-f98350bddcc2" config-ref="Web_Service_Consumer_Config" />
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="5f15c42d-9d7d-4083-bcdf-1bb8aa34e748" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+ns ns0 http://mulesoft.org/tshirt-service
+---
+payload.body.ns0#ListInventoryResponse.*inventory map ( inventory , indexOfInventory ) -> {
+	
+	descripcion: inventory.description ,
+	sizes: inventory.size ,
+	codigoproducto: inventory.productCode ,
+	stock: inventory.count
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-insert doc:name="Copy_of_Copy_of_Bulk insert" doc:id="414de788-5760-4067-964d-4191e129a35f" config-ref="Database_Config" >
+			<db:sql ><![CDATA[insert into retaillegacy.inventory (stock,descripcion,codigoproducto,sizes) values (:stock,:descripcion,:codigoproducto,:sizes)]]></db:sql>
+		</db:bulk-insert>
+		<db:select doc:name="Copy_of_Copy_of_Select" doc:id="0c654978-9a58-4e6e-81b5-c0b7eddb9a90" config-ref="Database_Config" >
+			<db:sql ><![CDATA[select * from retaillegacy.inventory]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Copy_of_Copy_of_Transform Message" doc:id="19f6b808-bded-479e-9480-cbcd43940982" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
